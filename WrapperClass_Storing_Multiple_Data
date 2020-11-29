@@ -1,0 +1,159 @@
+public class University_Student_Wrapper {
+    
+    public string course;
+    public integer duration;
+    public list<Student> lststd;
+    
+    //this is a constructor and as we have object of class, constructor will be fired immediately
+    public University_Student_Wrapper(){
+        course='Electronics';
+        duration =4;
+        
+        Student st = new Student();
+        st.Name='Ram Prakash';
+        st.Age=18;
+        
+        Student st1 = new Student();
+        st1.Name='Suresh D';
+        st1.Age=18;
+        
+        list<Student> lststud = new list<Student>();
+        lststud.add(st);
+        lststud.add(st1);
+        system.debug('Calling non-parameterized constructor');
+        system.debug('@@@@ Course: '+course);
+        system.debug('@@@@ duration: '+duration);
+        system.debug('@@@@ Name: '+st.Name);
+        system.debug('@@@@ Age: '+st.Age);
+        system.debug('@@@@ lststud: '+lststud);
+        
+    }
+    
+    //parameterized constructor
+    public University_Student_Wrapper(string courseName, Integer courseDuration, string studentName, Integer StudentAge){
+        
+        this.course=courseName;
+        this.duration=courseDuration;
+        Student stde= new Student();
+        stde.Name=studentName;
+        stde.Age=StudentAge;
+        system.debug('Calling parameterized constructor');
+        system.debug('## Course: '+course);
+        system.debug('## duration: '+duration);
+        system.debug('## Name: '+stde.Name);
+        system.debug('## Age: '+stde.Age);
+        
+    }
+    
+    //assigning value through a method
+    public void AssignValue(string CrName, Integer CrDuration, string StName, Integer StAge){
+        
+        this.course=CrName;
+        this.duration=CrDuration;
+        
+        Student st = new Student();
+        st.Name=StName;
+        st.Age=StAge;
+        system.debug('Calling 1st method');
+        system.debug('&& Course: '+course);
+        system.debug('&& duration: '+duration);
+        system.debug('&& Name: '+st.Name);
+        system.debug('&& Age: '+st.Age);
+    }
+    
+    //assigning value through a method and storing multiple values
+    public void StoreMultipleValues(string CrName, Integer CrDuration, string StName, Integer StAge){
+        list<Student> lstStud = new list<Student>();
+        this.course=CrName;
+        this.duration=CrDuration;
+        
+        Student st = new Student();
+        st.Name=StName;
+        st.Age=StAge;
+        
+        Student stu = new Student();
+        stu.Name='Senger';
+        stu.Age=28;
+        
+        lstStud.add(st);
+        lstStud.add(stu);
+        system.debug('Calling 2nd method');
+        system.debug('$$ Course: '+course);
+        system.debug('$$ duration: '+duration);
+        system.debug('$$ Name: '+st.Name);
+        system.debug('$$ Age: '+st.Age);
+        system.debug('$$ lstStud: '+lstStud);
+        
+    }
+    
+    public class Student{
+        
+        public string Name;
+        public Integer Age;
+    }
+    
+}
+
+===============================================Anonymonous code block=========================================================
+
+//calling 1st constructor
+University_Student_Wrapper  uni = new University_Student_Wrapper();
+
+//calling 2nd constructor, parameterized
+University_Student_Wrapper  univ = new University_Student_Wrapper('Prashant',2,'salesforce',27);
+
+//calling 1st method, and on call of this non-parameterized constructor will be called again
+University_Student_Wrapper univer= new University_Student_Wrapper();
+univer.AssignValue('Prashant Singh',4,'salesforce.com',26);
+
+//calling 2nd method, and on call of this non-parameterized constructor will be called again
+University_Student_Wrapper univers= new University_Student_Wrapper();
+univers.StoreMultipleValues('Prashant Veer Singh',4,'salesforce.com',28);
+
+===================================Test Class===============================================================================
+
+@isTest
+public class Test_University_Student_Wrapper {
+    
+    @TestSetUp
+    public static void CreateData(){
+        University_Student_Wrapper uni = new University_Student_Wrapper();
+        uni.course='EME';
+        uni.duration=12;
+        
+        //making data of wrapper class
+        University_Student_Wrapper.Student unis = new University_Student_Wrapper.Student();
+        unis.Name='Maj Suresh';
+        unis.Age=28;
+        
+    }
+    
+    //for non-parameterized constructor
+    @isTest
+    public static void TestMethod1(){
+        test.startTest();
+        University_Student_Wrapper uni = new University_Student_Wrapper();
+        system.assertEquals('Electronics', uni.course);
+        test.stopTest();
+    }
+    
+    //for parameterized constructor
+    @isTest
+    public static void TestMethod2(){
+        test.startTest();
+        University_Student_Wrapper uni = new University_Student_Wrapper('EME',12,'Mr. Prashant',28);
+        uni.StoreMultipleValues('EME',12,'Mr. Prashant',28);  //calling last method of class
+        system.assertEquals('EME', uni.course);
+        test.stopTest();   
+    }
+    
+    //test method for 1st method. 
+    @isTest
+    public static void TestMethod3(){
+        test.startTest();
+		University_Student_Wrapper univ = new University_Student_Wrapper();
+		univ.AssignValue('EME',12,'Mr. Prashant',28);
+		system.assertEquals('EME',univ.course);
+		test.stopTest();
+    }
+}

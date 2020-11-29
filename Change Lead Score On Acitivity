@@ -1,0 +1,179 @@
+/*Project Requirement:
+Whenever any activity (Task, Call, Event, and Email) done on a lead. There should be a 1+ point to lead score. 
+Once the lead score becomes 10 or greater than 10. We need to mark the lead as Hot in Rating picklist.
+/*
+*************************************************************************************************************************************************
+/*Solution:
+Create a custom field with Data type: Number. API: Lead_Score__c
+*/
+
+*************************************************************Trigger on Task Object***************************************************************
+trigger UpdateLeadScoreTask on Task(After Insert){
+    try{
+        map<String,Task> mapTaskLe = new map<String,Task>();
+        list<Lead> lstInitialLe = new list<Lead>();
+        list<Lead> lstUpdateScore = new list<Lead>();
+        if(trigger.isExecuting && trigger.isAfter && trigger.isInsert){
+            
+            for(Task t:trigger.new){
+                
+                mapTaskLe.put(t.WhoId,t);
+               
+            }
+            if(mapTaskLe.size()>0){
+                lstInitialLe=[select Id, Lead_Score__c,Rating from Lead where Id=:mapTaskLe.KeySet()];
+               
+            }
+            if(lstInitialLe.size()>0){
+                
+                for(Lead le:lstInitialLe){
+                    if(le.Lead_Score__c==Null){
+                        le.Lead_Score__c=1;
+                    }else if(le.Lead_Score__c!=Null){
+                        if(le.Lead_Score__c>=9){
+                            le.Rating='Hot';
+                            le.Lead_Score__c=le.Lead_Score__c+1;
+                            
+                        }else {
+                            
+                            le.Lead_Score__c=le.Lead_Score__c+1;
+                            
+                        }
+                        
+                        
+                    }
+                    lstUpdateScore.add(le);
+                }}
+            
+        }
+        
+        if(lstUpdateScore.size()>0){
+           
+            update lstUpdateScore;
+            
+        }}catch(exception ex){
+           system.debug('@@@@ getMessage: '+ex.getMessage());
+           system.debug('@@@@@ getLine: '+ex.getLineNumber());
+        }
+}
+
+**************************************************************Trigger on Event******************************************************************************
+trigger UpdateLeadScoreEvent on Event(After Insert){
+    try{
+        map<String,Event> mapTaskLe = new map<String,Event>();
+        list<Lead> lstInitialLe = new list<Lead>();
+        list<Lead> lstUpdateScore = new list<Lead>();
+        if(trigger.isExecuting && trigger.isAfter && trigger.isInsert){
+            
+            for(Event ev:trigger.new){
+                
+                mapTaskLe.put(ev.WhoId,ev);
+                
+            }
+            if(mapTaskLe.size()>0){
+                lstInitialLe=[select Id, Lead_Score__c,Rating from Lead where Id=:mapTaskLe.KeySet()];
+                
+            }
+            if(lstInitialLe.size()>0){
+                
+                for(Lead le:lstInitialLe){
+                    if(le.Lead_Score__c==Null){
+                        le.Lead_Score__c=1;
+                    }else if(le.Lead_Score__c!=Null){
+                        if(le.Lead_Score__c>=9){
+                            le.Rating='Hot';
+                            le.Lead_Score__c=le.Lead_Score__c+1;
+                            
+                        }else {
+                            
+                            le.Lead_Score__c=le.Lead_Score__c+1;
+                            
+                        }}
+                    
+                    lstUpdateScore.add(le);
+                }}
+            
+        }
+        
+        if(lstUpdateScore.size()>0){
+          
+            update lstUpdateScore;
+            
+        }}catch(exception ex){
+            system.debug('@@@@ getMessage: '+ex.getMessage());
+            system.debug('@@@@@ getLine: '+ex.getLineNumber());
+        }
+}
+*******************************************************TO Display Result on Lightning Component*********************************************************
+
+//Apex Controller
+
+public class DisplayLeadScore {
+
+    @AuraEnabled
+    public static List<Lead> DisplayLeadScoreMethod(){
+        list<Lead> lstLead = new list<Lead>();
+        lstLead=[select Id,Name, Lead_Score__c from Lead ORDER BY Lead_Score__c ASC NULLS LAST Limit 49999];
+        return lstLead;
+    }
+}
+
+************************************************************Lightning Component****************************************************************************
+
+<aura:component Controller="DisplayLeadScore">
+    
+    <aura:attribute name="LeadScore" type="list"/>
+    <aura:handler name="init" value="{!this}" action="{!c.myAction}"/>
+    
+    <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+        <thead>
+            <tr class="slds-line-height_reset">
+                <th class="" scope="col">
+                    <div class="slds-truncate" title="Opportunity Name">Lead Id</div>
+                </th>
+                <th class="" scope="col">
+                    <div class="slds-truncate" title="Account Name">Lead Name</div>
+                </th>
+                <th class="" scope="col">
+                    <div class="slds-truncate" title="Close Date">Lead Score</div>
+                </th>
+                
+            </tr>
+        </thead>
+        <tbody>
+             <aura:iteration items="{!v.LeadScore}"  var="leadScore">
+    
+            <tr class="slds-hint-parent">
+                <th data-label="Opportunity Name" scope="row">
+                    <div class="slds-truncate" title="Cloudhub">
+                        <a href="javascript:void(0);" tabindex="-1">{!leadScore.Id}</a>
+                    </div>
+                </th>
+                <td data-label="Account Name">
+                    <div class="slds-truncate" title="Cloudhub">{!leadScore.Name}</div>
+                </td>
+                <td data-label="Close Date">
+                    <div class="slds-truncate" title="4/14/2015">{!leadScore.Lead_Score__c}</div>
+                </td>
+                
+            </tr>
+                 </aura:iteration>
+        </tbody>
+    </table>
+    
+</aura:component>
+
+**********************************************************Controller.js****************************************************************************
+({
+	myAction : function(component, event, helper) {
+        var action = component.get("c.DisplayLeadScoreMethod");
+        action.setCallback(this,function(response){
+            var responseState=response.getState();
+            if(responseState==='SUCCESS'){
+                var responseValue= response.getReturnValue();
+                component.set("v.LeadScore",responseValue);
+            }
+        });
+		$A.enqueueAction(action);
+	}
+})
